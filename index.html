@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="HaydenFit">
 <title>HaydenFit</title>
+<link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -520,7 +521,7 @@ function rHome() {
         <button class="btn btn-o btn-sm" onclick="exportData()" style="flex:1">📦 Export</button>
         <button class="btn btn-ghost btn-sm" onclick="importData()" style="flex:1">📥 Restore</button>
       </div>
-    </div>\`;
+    </div>`;
 }
 
 // ── TASKS ──
@@ -922,6 +923,19 @@ async function sendMsg() {
 // ── INIT ──
 pruneOldData();tickStreak();
 rHome();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+window.addEventListener('error', function(e) {
+  const d = document.createElement('div');
+  d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#ff4b4b;color:#fff;padding:12px 16px;z-index:9999;font-size:13px;font-family:monospace;line-height:1.4';
+  d.textContent = 'JS Error: ' + e.message + ' (line ' + e.lineno + ')';
+  document.body.appendChild(d);
+  setTimeout(() => d.remove(), 8000);
+});
 </script>
 </body>
 </html>
