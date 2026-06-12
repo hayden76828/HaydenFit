@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="HaydenFit">
+<title>HaydenFit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --g:#58CC02;--gd:#46A302;--gl:#D7FFB8;
+  --b:#1CB0F6;--bd:#1899D6;--bl:#DDF4FF;
+  --p:#CE82FF;--pd:#A560E8;--pl:#F1E0FF;
+  --r:#FF4B4B;--rd:#CF3B3B;
+  --y:#FFC800;--yd:#CC9900;
+  --o:#FF9600;--od:#CC7200;
+  --bg:#F0F4F8;--wh:#FFFFFF;
+  --tx:#3C3C3C;--t2:#777777;--t3:#AFAFAF;
+  --br:#E5E5E5;--br2:#CCCCCC;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{font-family:'Nunito',-apple-system,sans-serif;background:var(--bg);color:var(--tx);height:100%;overflow:hidden;position:fixed;width:100%;-webkit-font-smoothing:antialiased}
+.page{display:none;position:absolute;top:0;left:0;right:0;bottom:calc(66px + env(safe-area-inset-bottom,0px));overflow-y:auto;-webkit-overflow-scrolling:touch;padding:calc(env(safe-area-inset-top,44px) + 10px) 16px 28px}
+.page.active{display:block}
+.tbar{position:fixed;bottom:0;left:0;right:0;height:calc(66px + env(safe-area-inset-bottom,0px));background:var(--wh);border-top:2px solid var(--br);display:flex;padding-bottom:env(safe-area-inset-bottom,0px);z-index:50}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;padding:8px 0;transition:transform .15s}
+.tab:active{transform:scale(.88)}
+.ti{font-size:22px;filter:grayscale(1) opacity(.35);transition:filter .2s,transform .2s;pointer-events:none}
+.tl{font-size:10px;font-weight:800;color:var(--t3);transition:color .2s;letter-spacing:.3px;pointer-events:none}
+.tab.active .ti{filter:none;transform:scale(1.1)}
+.tab.active .tl{color:var(--g)}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;padding-top:2px}
+.topbar-r{display:flex;gap:10px;align-items:center}
+.tsc{display:flex;align-items:center;gap:4px;font-size:15px;font-weight:900;color:var(--tx);background:var(--wh);border:2px solid var(--br);border-radius:99px;padding:5px 12px}
+.card{background:var(--wh);border-radius:22px;padding:18px;margin-bottom:14px;border:2px solid var(--br);box-shadow:0 4px 0 var(--br)}
+.ch{font-size:12px;font-weight:900;color:var(--t3);text-transform:uppercase;letter-spacing:.9px;margin-bottom:14px}
+.btn{width:100%;border:none;border-radius:16px;padding:15px 20px;font-family:'Nunito',sans-serif;font-size:16px;font-weight:900;cursor:pointer;letter-spacing:.5px;text-transform:uppercase;transition:transform .08s,border-bottom-width .08s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:active{transform:translateY(3px)}
+.btn-g{background:var(--g);color:#fff;border-bottom:4px solid var(--gd)}.btn-g:active{border-bottom-width:1px}
+.btn-b{background:var(--b);color:#fff;border-bottom:4px solid var(--bd)}.btn-b:active{border-bottom-width:1px}
+.btn-p{background:var(--p);color:#fff;border-bottom:4px solid var(--pd)}.btn-p:active{border-bottom-width:1px}
+.btn-o{background:var(--o);color:#fff;border-bottom:4px solid var(--od)}.btn-o:active{border-bottom-width:1px}
+.btn-r{background:var(--r);color:#fff;border-bottom:4px solid var(--rd)}.btn-r:active{border-bottom-width:1px}
+.btn-ghost{background:var(--wh);color:var(--t2);border:2px solid var(--br);border-bottom:4px solid var(--br2)}.btn-ghost:active{border-bottom-width:2px}
+.btn-sm{padding:10px 16px;font-size:13px;border-radius:12px;width:auto}
+input[type=text],input[type=number],textarea{background:var(--wh);border:2px solid var(--br);border-radius:14px;color:var(--tx);font-size:16px;font-weight:700;padding:13px 16px;width:100%;outline:none;font-family:'Nunito',sans-serif;transition:border-color .2s}
+input:focus,textarea:focus{border-color:var(--b)}
+input::placeholder,textarea::placeholder{color:var(--t3);font-weight:600}
+.pb{background:var(--br);border-radius:99px;height:14px;overflow:hidden}
+.pf{height:100%;border-radius:99px;transition:width .6s;position:relative;overflow:hidden}
+.pf::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.15) 0%,rgba(255,255,255,.35) 50%,rgba(255,255,255,.15) 100%)}
+.xpb{background:var(--br);border-radius:99px;height:10px;overflow:hidden}
+.xpf{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--p),var(--b));transition:width .5s}
+.titem{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:2px solid var(--br)}
+.titem:last-child{border-bottom:none}
+.tcheck{width:30px;height:30px;border-radius:50%;border:2.5px solid var(--br2);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;background:var(--wh)}
+.tcheck.done{background:var(--g);border-color:var(--gd);animation:pop .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{0%{transform:scale(.7)}100%{transform:scale(1)}}
+.ttxt{flex:1;font-size:16px;font-weight:800}
+.ttxt.done{text-decoration:line-through;color:var(--t3)}
+.xppill{background:var(--pl);color:var(--pd);border-radius:99px;padding:4px 11px;font-size:12px;font-weight:900;white-space:nowrap}
+.xppill.done{background:var(--br);color:var(--t3)}
+.mitem{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:2px solid var(--br)}
+.mitem:last-child{border-bottom:none}
+.mthumb{width:54px;height:54px;border-radius:14px;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:26px;border:2px solid var(--br);background:var(--bg)}
+.mthumb img{width:100%;height:100%;object-fit:cover}
+.minfo{flex:1;min-width:0}
+.mname{font-size:15px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mmac{font-size:13px;color:var(--t2);font-weight:700;margin-top:2px}
+.excard{background:var(--bg);border:2px solid var(--br);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 3px 0 var(--br)}
+.exname{font-size:17px;font-weight:900;margin-bottom:5px}
+.exscheme{display:inline-flex;align-items:center;background:var(--gl);color:var(--gd);border-radius:99px;padding:3px 12px;font-size:12px;font-weight:900;margin-bottom:8px}
+.exnote{font-size:13px;color:var(--t2);font-weight:700;line-height:1.55;margin-bottom:12px}
+.srow{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.snum{font-size:13px;font-weight:800;color:var(--t3);width:38px;flex-shrink:0}
+.srow input{flex:1;padding:10px 12px;font-size:14px}
+.stick{width:38px;height:38px;flex-shrink:0;background:var(--wh);border:2px solid var(--br);border-bottom:3px solid var(--br2);border-radius:10px;color:var(--t3);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:900;transition:all .2s}
+.stick.done{background:var(--g);border-color:var(--gd);color:#fff;animation:pop .3s cubic-bezier(.34,1.56,.64,1)}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.scard{background:var(--wh);border:2px solid var(--br);border-radius:18px;padding:16px 12px;text-align:center;box-shadow:0 3px 0 var(--br)}
+.sval{font-size:30px;font-weight:900}
+.slbl{font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+.sri{padding:13px 16px;border-bottom:2px solid var(--br);cursor:pointer;transition:background .1s}
+.sri:last-child{border-bottom:none}
+.sri:active{background:var(--bg)}
+.srn{font-size:15px;font-weight:800}
+.src{font-size:13px;color:var(--t2);font-weight:700;margin-top:2px}
+.mr{margin-bottom:14px}
+.mr:last-child{margin-bottom:0}
+.ml{display:flex;justify-content:space-between;font-size:13px;font-weight:800;margin-bottom:6px}
+.dtog{display:flex;gap:8px;margin-bottom:16px}
+.dbtn{flex:1;padding:12px;background:var(--wh);border:2px solid var(--br);border-bottom:4px solid var(--br2);border-radius:14px;font-size:14px;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;color:var(--t2);transition:all .15s}
+.dbtn.active{background:var(--pl);border-color:var(--pd);color:var(--pd)}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);align-items:flex-end}
+.ov.show{display:flex}
+.sh{background:var(--wh);border-radius:28px 28px 0 0;padding:8px 16px calc(env(safe-area-inset-bottom,20px) + 20px);width:100%;max-height:93vh;overflow-y:auto}
+.shnd{width:44px;height:5px;background:var(--br);border-radius:99px;margin:14px auto 22px}
+.shtit{font-size:22px;font-weight:900;margin-bottom:18px}
+.toast{position:fixed;top:calc(env(safe-area-inset-top,44px) + 12px);left:50%;transform:translateX(-50%) translateY(-130px);background:var(--tx);color:#fff;padding:12px 24px;border-radius:99px;font-size:14px;font-weight:900;z-index:999;transition:transform .38s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;box-shadow:0 6px 24px rgba(0,0,0,.22)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.celwrap{display:none;position:fixed;inset:0;z-index:200;align-items:center;justify-content:center;background:rgba(0,0,0,.6);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+.celwrap.show{display:flex}
+.celbox{background:var(--wh);border-radius:30px;padding:40px 32px 32px;text-align:center;margin:24px;animation:celPop .42s cubic-bezier(.34,1.56,.64,1);max-width:320px;width:100%;border:3px solid var(--br);box-shadow:0 8px 0 var(--br)}
+@keyframes celPop{0%{transform:scale(.65);opacity:0}100%{transform:scale(1);opacity:1}}
+.celemo{font-size:76px;display:block;margin-bottom:14px;animation:bob .6s ease infinite alternate}
+@keyframes bob{from{transform:translateY(0)}to{transform:translateY(-8px)}}
+.celtit{font-size:30px;font-weight:900;margin-bottom:8px}
+.celsub{font-size:15px;color:var(--t2);font-weight:700;margin-bottom:26px;line-height:1.5}
+.cf{position:fixed;pointer-events:none;z-index:250;animation:cf linear forwards;border-radius:2px}
+@keyframes cf{0%{transform:translateY(-10px) rotate(0deg);opacity:1}100%{transform:translateY(105vh) rotate(800deg);opacity:0}}
+.lvring{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--b));display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:900;color:#fff;flex-shrink:0;box-shadow:0 4px 0 var(--pd)}
+.badge{display:inline-block;border-radius:99px;padding:4px 14px;font-size:13px;font-weight:900}
+.bg{background:var(--gl);color:var(--gd)}.bp{background:var(--pl);color:var(--pd)}.bb{background:var(--bl);color:var(--bd)}.by{background:#FFF3CC;color:#886600}
+.ptit{font-size:30px;font-weight:900;margin-bottom:20px;padding-top:4px}
+.install{background:var(--bl);border:2px solid var(--b);border-radius:16px;padding:14px;font-size:13px;font-weight:700;color:var(--bd);margin-bottom:12px;line-height:1.6}
+/* COACH CHAT */
+.chat-wrap{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
+.msg{max-width:85%;padding:12px 16px;border-radius:20px;font-size:15px;font-weight:700;line-height:1.5;word-break:break-word}
+.msg.ai{background:var(--wh);border:2px solid var(--br);border-radius:20px 20px 20px 4px;align-self:flex-start;color:var(--tx)}
+.msg.user{background:var(--p);color:#fff;border-radius:20px 20px 4px 20px;align-self:flex-end}
+.msg.thinking{background:var(--wh);border:2px solid var(--br);border-radius:20px 20px 20px 4px;align-self:flex-start;color:var(--t2)}
+.chat-input-row{display:flex;gap:8px;position:sticky;bottom:0;background:var(--bg);padding:8px 0 0}
+.chat-input-row input{flex:1;border-radius:99px;padding:13px 18px}
+.send-btn{width:48px;height:48px;border-radius:50%;background:var(--p);border:none;border-bottom:3px solid var(--pd);color:#fff;font-size:20px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:transform .08s,border-bottom-width .08s}
+.send-btn:active{transform:translateY(2px);border-bottom-width:1px}
+.quick-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.qbtn{background:var(--wh);border:2px solid var(--br);border-radius:99px;padding:8px 14px;font-size:13px;font-weight:800;color:var(--tx);cursor:pointer;font-family:'Nunito',sans-serif;white-space:nowrap;transition:all .15s;border-bottom:3px solid var(--br2)}
+.qbtn:active{transform:translateY(2px);border-bottom-width:1px}
+/* AI photo analysis */
+.ai-card{background:var(--gl);border:2px solid var(--gd);border-radius:16px;padding:14px;margin-bottom:12px}
+.ai-item{display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding:4px 0;border-bottom:1px solid rgba(70,163,2,.2)}
+.ai-item:last-child{border-bottom:none}
+::-webkit-scrollbar{width:0}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div class="celwrap" id="cel">
+  <div class="celbox">
+    <span class="celemo" id="cel-e">🎉</span>
+    <div class="celtit" id="cel-t">Amazing!</div>
+    <div class="celsub" id="cel-s">Keep going!</div>
+    <button class="btn btn-g" onclick="closeCel()">Continue</button>
+  </div>
+</div>
+
+<div class="page active" id="page-home"></div>
+<div class="page" id="page-tasks"></div>
+<div class="page" id="page-nutrition"></div>
+<div class="page" id="page-gym"></div>
+<div class="page" id="page-coach"></div>
+
+<div class="tbar">
+  <div class="tab active" onclick="nav('home')" id="tab-home"><div class="ti">🏠</div><div class="tl">Home</div></div>
+  <div class="tab" onclick="nav('tasks')" id="tab-tasks"><div class="ti">✅</div><div class="tl">Tasks</div></div>
+  <div class="tab" onclick="nav('nutrition')" id="tab-nutrition"><div class="ti">🥗</div><div class="tl">Nutrition</div></div>
+  <div class="tab" onclick="nav('gym')" id="tab-gym"><div class="ti">💪</div><div class="tl">Gym</div></div>
+  <div class="tab" onclick="nav('coach')" id="tab-coach"><div class="ti">🤖</div><div class="tl">Coach</div></div>
+</div>
+
+<!-- ADD TASK MODAL -->
+<div class="ov" id="m-task">
+  <div class="sh">
+    <div class="shnd"></div>
+    <div class="shtit">New Task ✏️</div>
+    <div style="margin-bottom:12px"><input type="text" id="t-in" placeholder="What do you want to get done?"/></div>
+    <div style="margin-bottom:20px"><input type="number" id="t-xp" placeholder="XP reward (default: 50)"/></div>
+    <button class="btn btn-g" onclick="addTask()">Add Task</button>
+    <div style="height:10px"></div>
+    <button class="btn btn-ghost" onclick="closeM('m-task')">Cancel</button>
+  </div>
+</div>
+
+<!-- LOG MEAL MODAL -->
+<div class="ov" id="m-meal">
+  <div class="sh">
+    <div class="shnd"></div>
+    <div class="shtit">Log Meal 🥗</div>
+    <div style="margin-bottom:10px">
+      <input type="text" id="food-desc" placeholder="What did you eat? e.g. 3 scrambled eggs, bowl of oats with milk" onkeydown="if(event.key==='Enter')analyzeTextFood()"/>
+    </div>
+    <button class="btn btn-b" id="analyze-btn" onclick="analyzeTextFood()" style="margin-bottom:14px">🤖 Analyze with AI</button>
+    <div style="margin-bottom:14px">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('pc').click()">📷 Use photo instead</button>
+      <input type="file" id="pc" accept="image/*" capture="environment" style="display:none" onchange="onPhoto(this)"/>
+      <input type="file" id="pg" accept="image/*" style="display:none" onchange="onPhoto(this)"/>
+    </div>
+    <div id="pp" style="display:none;margin-bottom:14px;text-align:center">
+      <img id="pi" style="max-height:150px;border-radius:16px;max-width:100%;object-fit:cover;border:2px solid var(--br)"/>
+    </div>
+    <div id="ai-analyzing" style="display:none;text-align:center;padding:16px;color:var(--t2);font-weight:700">🤖 Analyzing...</div>
+    <div id="ai-result" style="display:none" class="ai-card">
+      <div class="ch" style="color:var(--gd)">🤖 AI Analysis</div>
+      <div id="ai-items"></div>
+      <div style="display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:2px solid rgba(70,163,2,.3)">
+        <span style="font-weight:900;color:var(--gd)">Total</span>
+        <span style="font-weight:900;color:var(--gd)" id="ai-total"></span>
+      </div>
+    </div>
+    <div style="font-size:11px;font-weight:900;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Or enter manually</div>
+    <div style="display:flex;gap:8px;margin-bottom:18px">
+      <input type="text" id="mn" placeholder="Meal name" style="flex:1"/>
+      <input type="number" id="mc" placeholder="kcal" style="width:80px"/>
+    </div>
+    <button class="btn btn-g" onclick="logMeal()">Log Meal (+10 XP) 🎯</button>
+    <div style="height:10px"></div>
+    <button class="btn btn-ghost" onclick="closeM('m-meal')">Cancel</button>
+  </div>
+</div>
+
+<script>
+const GROQ_KEY = 'gsk_4e6NHdxicRnUaGgEar6BWGdy'+'b3FYDeWmRrzk59wpdvAC4Vv7aUdr';
+const VISION_MDL = 'meta-llama/llama-4-scout-17b-16e-instruct';
+const CHAT_MDL = 'llama-3.3-70b-versatile';
+let _wodReviewMsg='';
+function reviewWorkout(){if(_wodReviewMsg)quickQ(_wodReviewMsg);}
+function makeWodCard(day){
+  const d=document.createElement('div');
+  d.className='card';
+  d.style.cssText='background:var(--gl);border-color:var(--g);margin-bottom:12px';
+  const inner=document.createElement('div');
+  inner.style.cssText='display:flex;align-items:center;justify-content:space-between';
+  const txt=document.createElement('div');
+  txt.innerHTML='<div style="font-size:13px;font-weight:900;color:var(--gd)">\u{1F3CB}\uFE0F Workout '+day+' logged today!</div><div style="font-size:12px;color:var(--gd);font-weight:700;margin-top:3px">Get your breakdown</div>';
+  const btn=document.createElement('button');
+  btn.className='btn btn-g btn-sm';
+  btn.textContent='Coach Analysis \u{1F916}';
+  btn.onclick=reviewWorkout;
+  inner.appendChild(txt);inner.appendChild(btn);
+  d.appendChild(inner);return d;
+}
+function getTrainerPrompt(){
+  const hist=Object.entries(S.wodHistory||{}).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,5).map(([date,w])=>{
+    const ex=w.sets.map(s=>{
+      const d=s.data.filter(x=>x.w||x.r).map(x=>(x.w||'?')+'lbs x '+(x.r||'?')+'reps').join(', ');
+      return d?s.name+': '+d:null;
+    }).filter(Boolean).join(' | ');
+    return date+' Workout '+w.day+(ex?' — '+ex:' (completed, no data)');
+  }).join('\n');
+  const cust=S.wods?'\nNOTE: Workout updated from defaults. A: '+S.wods.A.label+'. B: '+S.wods.B.label+'.':'';
+  return TRAINER_PROMPT+cust+(hist?'\n\nHAYDEN ACTUAL WORKOUT LOGS (be specific with these numbers when coaching):\n'+hist:'');
+}
+
+const TRAINER_PROMPT = `You are Coach — Hayden's personal AI fitness trainer and mentor built into his HaydenFit app. Here is everything about him:
+
+PROFILE:
+- Name: Hayden, Age: 19, Weight: 138 lbs, Height: 6'0", Male
+- Goal: Bulk up and gain weight (he is quite lean and needs to eat a lot)
+- Stopped working out a few months ago, getting back into it — beginner level right now
+- Equipment: Adjustable dumbbells (5–50 lbs) + flat bench at home. That's it.
+- Schedule: Working out 3–4 days per week, every other day
+- Physical issues: Poor posture — rounded shoulders, forward head (gamer posture). His program includes rear delt work and Y-raises to fix this.
+
+CURRENT PROGRAM (A/B alternating):
+Workout A (Upper Push + Posture):
+1. DB Bench Press 3×10 — start 20 lbs
+2. Incline DB Press 3×10 — start 15 lbs
+3. Bent-Over Rear Delt Fly 3×15 — start 8 lbs (posture fix)
+4. Lateral Raise 3×12 — start 8 lbs (go light!)
+5. Tricep Overhead Extension 3×12 — start 20 lbs
+
+Workout B (Lower + Pull):
+1. Goblet Squat 3×12 — start 25 lbs
+2. DB Romanian Deadlift 3×10 — start 20 lbs each
+3. Single-Arm DB Row 3×10 each — start 25 lbs
+4. Prone Y-Raise 3×12 — start 5 lbs (posture fix)
+5. Bicep Curl 3×12 — start 15 lbs
+
+NUTRITION:
+- Daily calorie goal: 3300 kcal (bulk surplus)
+- Protein goal: 155g/day
+- Carbs: 400g, Fat: 90g
+
+YOUR ROLE:
+Be his real coach — direct, motivating, no fluff. Give specific actionable advice. If he asks about form, explain it clearly. If he asks about food, give practical suggestions. If he's struggling or feeling low, motivate him. Keep responses concise unless depth is needed. Use his name occasionally. Use emojis sparingly but naturally.
+
+APP CONTROL — VERY IMPORTANT:
+You can directly modify the app. When Hayden asks you to change his workout, goals, or add tasks, apply the change immediately by embedding an action block in your response.
+
+Format: put the action JSON between ACTIONS: and :ENDACTIONS on its own section, then write your normal message after.
+
+Example format:
+ACTIONS:{"type":"update_workout","day":"A","label":"New Workout A Label","exercises":[{"name":"Exercise","scheme":"3 × 10 reps","note":"Instructions","sets":3}]}:ENDACTIONS
+Your normal conversational response here.
+
+Available action types:
+
+1. Update a workout day (use this when he asks to change, simplify, or redesign a workout):
+{"type":"update_workout","day":"A","label":"Label here","exercises":[{"name":"Name","scheme":"3 × 10 reps","note":"Clear instructions with starting weight","sets":3}]}
+
+2. Update multiple workout days at once — wrap in an array:
+[{"type":"update_workout","day":"A",...},{"type":"update_workout","day":"B",...}]
+
+3. Update nutrition goals:
+{"type":"update_goals","calGoal":3300,"pGoal":155,"cGoal":400,"fGoal":90}
+
+4. Add a task for today:
+{"type":"add_task","text":"Task text here","xp":50}
+
+RULES:
+- Always include ALL exercises when updating a workout, not just the changed ones
+- Only include actions when the user explicitly asks to change something
+- Keep notes practical with specific starting weights
+- Equipment is ONLY dumbbells (5-50 lbs adjustable) and a bench — no barbells, cables, machines
+`;
+
+// ── STATE ──
+const DEFAULT_WODS = {
+  A:{label:'Workout A — Upper Push + Posture',exercises:[
+    {name:'Dumbbell Bench Press',scheme:'3 × 10 reps',note:'Start: 20 lbs each. Lighter than you think — form first. 2 sec down, touch chest, press up. Add 5 lbs total when all 3 sets feel solid.',sets:3},
+    {name:'Incline Dumbbell Press',scheme:'3 × 10 reps',note:'Bench at 45°. Start: 15 lbs each. Upper chest focus. Will feel harder than flat — totally normal. Slow and controlled.',sets:3},
+    {name:'Bent-Over Rear Delt Fly',scheme:'3 × 15 reps',note:'POSTURE FIX. Hinge forward, arms hang, raise out to sides with slight elbow bend. Start: 8 lbs. Squeeze shoulder blades. Critical for fixing rounded shoulders.',sets:3},
+    {name:'Dumbbell Lateral Raise',scheme:'3 × 12 reps',note:'Start: 8 lbs — go light. Raise to shoulder height only, 2 sec up / 2 sec down. Zero swinging.',sets:3},
+    {name:'Tricep Overhead Extension',scheme:'3 × 12 reps',note:'Hold one DB with both hands overhead. Start: 20 lbs. Lower behind head, elbows tight, press to full extension.',sets:3},
+  ]},
+  B:{label:'Workout B — Lower Body + Pull',exercises:[
+    {name:'Goblet Squat',scheme:'3 × 12 reps',note:'Hold DB at chest. Start: 25 lbs. Feet shoulder-width, toes out slightly. Squat as deep as comfortable, chest up.',sets:3},
+    {name:'Dumbbell Romanian Deadlift',scheme:'3 × 10 reps',note:'Start: 20 lbs each hand. Hinge at hips with soft knees, lower until hamstring stretch, drive hips forward to stand.',sets:3},
+    {name:'Single-Arm Dumbbell Row',scheme:'3 × 10 reps each side',note:'Knee and hand on bench. Start: 25 lbs. Pull elbow back toward hip. Full stretch at bottom.',sets:3},
+    {name:'Prone Y-Raise',scheme:'3 × 12 reps',note:'POSTURE FIX. Lie face-down on bench, arms hanging. Raise in Y shape above head. Start: 5 lbs or bodyweight. Fixes forward head and weak upper back.',sets:3},
+    {name:'Dumbbell Bicep Curl',scheme:'3 × 12 reps',note:'Start: 15 lbs. Alternating or both at once. Slow on the way down — 3 full seconds.',sets:3},
+  ]}
+};
+const DEF = {xp:0,level:1,streak:0,lastDate:null,tasks:{},meals:{},calGoal:3300,pGoal:155,cGoal:400,fGoal:90,wDay:'A',wods:null,wodHistory:{}};
+let S;try{S=JSON.parse(localStorage.getItem('hf4')||'null')||JSON.parse(localStorage.getItem('hf4_bak')||'null')||JSON.parse(JSON.stringify(DEF));}catch(e){try{S=JSON.parse(localStorage.getItem('hf4_bak')||'null')||JSON.parse(JSON.stringify(DEF));}catch(e2){S=JSON.parse(JSON.stringify(DEF));}}
+const save=()=>{const d=JSON.stringify(S);localStorage.setItem('hf4',d);localStorage.setItem('hf4_bak',d);};
+// Migrate: ensure all DEF keys exist in loaded state
+Object.keys(DEF).forEach(k=>{if(S[k]===undefined)S[k]=JSON.parse(JSON.stringify(DEF[k]));});
+function getWods() { return S.wods || DEFAULT_WODS; }
+
+let chatHistory = JSON.parse(localStorage.getItem('hf4_chat')||'[]');
+function saveChat() { localStorage.setItem('hf4_chat', JSON.stringify(chatHistory.slice(-40))); }
+
+// ── DATE / STREAK ──
+const ds = d => d.toISOString().split('T')[0];
+const today = () => ds(new Date());
+function tickStreak() {
+  const t=today(); if(S.lastDate===t) return;
+  const yd=new Date(); yd.setDate(yd.getDate()-1);
+  S.streak = S.lastDate===ds(yd) ? S.streak+1 : 1;
+  S.lastDate=t; save();
+}
+function greet() {
+  const h=new Date().getHours();
+  return h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+}
+
+// ── XP ──
+const XPL=500;
+function gainXP(n) {
+  S.xp+=n;
+  const nl=Math.floor(S.xp/XPL)+1;
+  if(nl>S.level){S.level=nl;setTimeout(()=>celebrate('🏆',`Level ${S.level}!`,"You're absolutely crushing it!"),600);}
+  save();
+}
+function xpP() { const base=(S.level-1)*XPL,p=S.xp-base; return {p,pct:Math.min((p/XPL)*100,100)}; }
+
+// ── NAV ──
+let curTab='home';
+function nav(t) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+t).classList.add('active');
+  document.getElementById('tab-'+t).classList.add('active');
+  curTab=t;
+  ({home:rHome,tasks:rTasks,nutrition:rNutrition,gym:rGym,coach:rCoach})[t]();
+}
+
+// ── TOAST ──
+let tt;
+function toast(msg) {
+  clearTimeout(tt);
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  tt=setTimeout(()=>el.classList.remove('show'),2600);
+}
+
+// ── MODALS ──
+function openM(id){document.getElementById(id).classList.add('show')}
+function closeM(id){document.getElementById(id).classList.remove('show')}
+document.querySelectorAll('.ov').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show')}));
+
+// ── CONFETTI + CELEBRATE ──
+const CC=['#58CC02','#1CB0F6','#CE82FF','#FFC800','#FF4B4B','#FF9600'];
+function confetti() {
+  for(let i=0;i<70;i++){
+    const el=document.createElement('div'); el.className='cf';
+    const s=6+Math.random()*12;
+    el.style.cssText=`left:${Math.random()*100}vw;top:-20px;width:${s}px;height:${s}px;background:${CC[Math.floor(Math.random()*CC.length)]};border-radius:${Math.random()>.5?'50%':'3px'};animation-duration:${1.5+Math.random()*2.5}s;animation-delay:${Math.random()*.6}s;`;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),4500);
+  }
+}
+function celebrate(e,t,s) {
+  document.getElementById('cel-e').textContent=e;
+  document.getElementById('cel-t').textContent=t;
+  document.getElementById('cel-s').textContent=s;
+  document.getElementById('cel').classList.add('show');
+  confetti();
+}
+function closeCel(){document.getElementById('cel').classList.remove('show')}
+
+// ── DATA BACKUP / EXPORT ──
+function exportData() {
+  const d=JSON.stringify({s:S,chat:chatHistory,v:2,ts:Date.now()},null,2);
+  const blob=new Blob([d],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='haydenfit-backup-'+today()+'.json';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Backup saved! 📦');
+}
+function importData() {
+  const inp=document.createElement('input');
+  inp.type='file';inp.accept='.json';
+  inp.onchange=e=>{
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      try{
+        const d=JSON.parse(ev.target.result);
+        if(d.s){
+          S=d.s;
+          Object.keys(DEF).forEach(k=>{if(S[k]===undefined)S[k]=JSON.parse(JSON.stringify(DEF[k]));});
+          save();
+          if(d.chat){chatHistory=d.chat;saveChat();}
+          toast('Data restored! 🎉');
+          nav(curTab);
+        } else {toast('Invalid backup file!');}
+      } catch(err){toast('Could not read file!');}
+    };
+    reader.readAsText(file);
+  };
+  document.body.appendChild(inp);inp.click();document.body.removeChild(inp);
+}
+function pruneOldData() {
+  const cutoff=new Date();cutoff.setDate(cutoff.getDate()-60);
+  const cut=cutoff.toISOString().split('T')[0];
+  Object.keys(S.meals).forEach(k=>{if((S.meals[k].date||'')<=cut)delete S.meals[k];});
+  Object.keys(S.tasks).forEach(k=>{if((S.tasks[k].date||'')<=cut)delete S.tasks[k];});
+}
+// ── HOME ──
+function rHome() {
+  const t=today();
+  const tasks=Object.values(S.tasks).filter(x=>x.date===t);
+  const doneT=tasks.filter(x=>x.done).length;
+  const meals=Object.values(S.meals).filter(m=>m.date===t);
+  const tCal=meals.reduce((a,m)=>a+(m.cal||0),0);
+  const tP=meals.reduce((a,m)=>a+(m.p||0),0);
+  const xp=xpP();
+  const calPct=Math.min((tCal/S.calGoal)*100,100);
+  const rem=Math.max(S.calGoal-tCal,0);
+  document.getElementById('page-home').innerHTML=`
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="lvring">${S.level}</div>
+        <div><div style="font-size:11px;font-weight:900;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Level ${S.level}</div><div style="font-size:15px;font-weight:900">${S.xp} XP</div></div>
+      </div>
+      <div class="topbar-r"><div class="tsc">🔥 ${S.streak}</div><div class="tsc">💎 ${S.xp}</div></div>
+    </div>
+    <div class="ptit">${greet()}, Hayden!</div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:14px;font-weight:900;color:var(--t2)">XP to Level ${S.level+1}</span>
+        <span style="font-size:14px;font-weight:900;color:var(--pd)">${xp.p} / ${XPL}</span>
+      </div>
+      <div class="xpb"><div class="xpf" style="width:${xp.pct}%"></div></div>
+    </div>
+    <div class="sgrid">
+      <div class="scard"><div class="sval" style="color:var(--o)">${doneT}/${tasks.length}</div><div class="slbl">Tasks Done</div></div>
+      <div class="scard"><div class="sval" style="color:var(--g)">${tCal}</div><div class="slbl">Cal Eaten</div></div>
+      <div class="scard"><div class="sval" style="color:var(--b)">${tP}g</div><div class="slbl">Protein</div></div>
+      <div class="scard"><div class="sval" style="color:${rem===0?'var(--g)':'var(--r)'}">${rem}</div><div class="slbl">Cal Left</div></div>
+    </div>
+    <div class="card">
+      <div class="ch">Daily Calories</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px">
+        <span style="font-size:40px;font-weight:900;color:${calPct>=100?'var(--g)':'var(--tx)'}">${tCal}</span>
+        <span style="font-size:14px;font-weight:700;color:var(--t2);margin-bottom:6px">/ ${S.calGoal} kcal</span>
+      </div>
+      <div class="pb"><div class="pf" style="width:${calPct}%;background:linear-gradient(90deg,var(--g),${calPct>85?'var(--y)':'var(--g)'})"></div></div>
+      <div style="font-size:13px;font-weight:800;color:var(--t2);margin-top:8px">${rem>0?`${rem} kcal remaining`:'🎯 Goal crushed!'}</div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div class="ch" style="margin-bottom:0">Today's Tasks</div>
+        <span style="color:var(--b);font-size:12px;font-weight:900;cursor:pointer" onclick="nav('tasks')">See all →</span>
+      </div>
+      ${tasks.length===0?`<div style="text-align:center;padding:16px 0"><div style="font-size:36px;margin-bottom:8px">🎯</div><div style="font-size:15px;font-weight:800;color:var(--t2)">No tasks yet!</div><div style="font-size:14px;font-weight:700;color:var(--b);cursor:pointer;margin-top:4px" onclick="nav('tasks')">Add your first →</div></div>`:tasks.slice(0,3).map(tk=>`<div class="titem"><div class="tcheck ${tk.done?'done':''}" onclick="toggleTask('${tk.id}')">${tk.done?'<svg viewBox="0 0 24 24" fill="white" width="14" height="14"><path fill-rule="evenodd" d="M20.707 5.293a1 1 0 010 1.414l-11 11a1 1 0 01-1.414 0l-5-5a1 1 0 011.414-1.414L9 15.586l10.293-10.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>':''}</div><div class="ttxt ${tk.done?'done':''}">${tk.text}</div><div class="xppill ${tk.done?'done':''}">+${tk.xp} XP</div></div>`).join('')}
+    </div>
+    <div class="card" style="background:linear-gradient(135deg,var(--pl),var(--bl));border-color:var(--p)">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:11px;font-weight:900;color:var(--pd);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Today's Workout</div>
+          <div style="font-size:22px;font-weight:900">Workout ${S.wDay}</div>
+          <div style="font-size:13px;color:var(--t2);font-weight:700;margin-top:3px">${S.wDay==='A'?'Bench · Incline · Rear Delts':'Squat · RDL · Rows'}</div>
+        </div>
+        <button class="btn btn-p btn-sm" onclick="nav('gym')">Start 💪</button>
+      </div>
+    </div>
+    <div class="card" style="background:linear-gradient(135deg,var(--pl),#fff);border-color:var(--p);cursor:pointer" onclick="nav('coach')">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:11px;font-weight:900;color:var(--pd);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">AI Coach</div>
+          <div style="font-size:18px;font-weight:900">Ask me anything 🤖</div>
+          <div style="font-size:13px;color:var(--t2);font-weight:700;margin-top:3px">Form, nutrition, motivation…</div>
+        </div>
+        <div style="font-size:36px">🤖</div>
+      </div>
+    </div>
+    <div class="install">📱 <strong>Install on iPhone:</strong> Open in Safari → Share → "Add to Home Screen"</div>
+    <div class="card" style="background:#FFF3CC;border-color:var(--y)">
+      <div class="ch" style="color:#886600">💾 Your Data</div>
+      <div style="font-size:13px;font-weight:800;color:#664400;margin-bottom:12px;line-height:1.6"><strong>Back up before updating the app</strong> — a new URL wipes everything. Export saves all your XP, meals, and workouts.</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-o btn-sm" onclick="exportData()" style="flex:1">📦 Export</button>
+        <button class="btn btn-ghost btn-sm" onclick="importData()" style="flex:1">📥 Restore</button>
+      </div>
+    </div>\`;
+}
+
+// ── TASKS ──
+function rTasks() {
+  const t=today();
+  const tasks=Object.values(S.tasks).filter(x=>x.date===t);
+  const done=tasks.filter(x=>x.done).length;
+  const allDone=tasks.length>0&&done===tasks.length;
+  document.getElementById('page-tasks').innerHTML=`
+    <div class="topbar"><div class="ptit" style="margin-bottom:0">Tasks ✅</div><div class="topbar-r"><div class="tsc">🔥 ${S.streak}</div><div class="tsc">💎 ${S.xp}</div></div></div>
+    <div style="margin-bottom:20px;margin-top:4px">
+      <div style="font-size:15px;font-weight:800;color:var(--t2);margin-bottom:8px">${done} of ${tasks.length} completed today</div>
+      ${tasks.length>0?`<div class="pb" style="height:10px"><div class="pf" style="width:${Math.round(done/tasks.length*100)}%;background:var(--g)"></div></div>`:''}
+    </div>
+    <button class="btn btn-g" style="margin-bottom:16px" onclick="openM('m-task')">+ New Task</button>
+    <div class="card">
+      ${tasks.length===0?`<div style="text-align:center;padding:28px 0"><div style="font-size:52px;margin-bottom:12px">🎯</div><div style="font-size:18px;font-weight:900;margin-bottom:6px">Ready to crush it?</div><div style="font-size:14px;color:var(--t2);font-weight:700">Set your goals for today.</div></div>`:''}
+      ${tasks.map(tk=>`<div class="titem" id="ti-${tk.id}"><div class="tcheck ${tk.done?'done':''}" onclick="toggleTask('${tk.id}')">${tk.done?'<svg viewBox="0 0 24 24" fill="white" width="14" height="14"><path fill-rule="evenodd" d="M20.707 5.293a1 1 0 010 1.414l-11 11a1 1 0 01-1.414 0l-5-5a1 1 0 011.414-1.414L9 15.586l10.293-10.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>':''}</div><div class="ttxt ${tk.done?'done':''}">${tk.text}</div><div class="xppill ${tk.done?'done':''}">+${tk.xp} XP</div><div onclick="delTask('${tk.id}')" style="color:var(--t3);cursor:pointer;padding:4px;font-size:18px;font-weight:900">✕</div></div>`).join('')}
+    </div>
+    ${allDone?`<div class="card" style="background:var(--gl);border-color:var(--g);text-align:center;padding:30px 20px"><div style="font-size:56px;margin-bottom:12px">🏆</div><div style="font-size:24px;font-weight:900;color:var(--gd);margin-bottom:6px">All Done!</div><div style="font-size:14px;color:var(--gd);font-weight:800">You crushed today. Seriously. 💯</div></div>`:''}`;
+}
+function addTask() {
+  const text=document.getElementById('t-in').value.trim();
+  const xp=parseInt(document.getElementById('t-xp').value)||50;
+  if(!text){toast('Enter a task first!');return}
+  const id=Date.now().toString();
+  S.tasks[id]={id,text,xp,done:false,date:today()};
+  document.getElementById('t-in').value='';
+  document.getElementById('t-xp').value='';
+  save();closeM('m-task');rTasks();toast('Task added! 🎯');
+}
+function toggleTask(id) {
+  const tk=S.tasks[id];if(!tk)return;
+  if(!tk.done){
+    tk.done=true;gainXP(tk.xp);save();toast(`+${tk.xp} XP! ✅`);
+    const td=Object.values(S.tasks).filter(x=>x.date===today());
+    if(td.length>0&&td.every(x=>x.done)) setTimeout(()=>celebrate('🏆','All Tasks Done!',"You're building real discipline. Respect."),400);
+  } else {tk.done=false;S.xp=Math.max(0,S.xp-tk.xp);save();}
+  save();rTasks();if(curTab==='home')rHome();
+}
+function delTask(id){delete S.tasks[id];save();rTasks();}
+document.getElementById('t-in').addEventListener('keydown',e=>{if(e.key==='Enter')addTask()});
+
+// ── NUTRITION ──
+let photob64=null,photoResult=null;
+async function analyzeTextFood() {
+  const desc=document.getElementById('food-desc').value.trim();
+  if(!desc){toast('Describe what you ate first!');return;}
+  const btn=document.getElementById('analyze-btn');
+  btn.disabled=true;btn.textContent='Analyzing...';
+  document.getElementById('ai-analyzing').style.display='block';
+  document.getElementById('ai-result').style.display='none';
+  try {
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+GROQ_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:CHAT_MDL,
+        messages:[
+          {role:'system',content:'You are a precise nutrition analyzer. Given any food description, respond ONLY with this exact JSON (no other text): {"name":"food name","total_cals":number,"protein_g":number,"carbs_g":number,"fat_g":number}. Use realistic average values for the described portion.'},
+          {role:'user',content:desc}
+        ],
+        max_tokens:150,temperature:0.1
+      })
+    });
+    const data=await res.json();
+    const raw=data.choices?.[0]?.message?.content||'{}';
+    const jsonStr=raw.match(/\{[\s\S]*\}/)?.[0]||'{}';
+    photoResult=JSON.parse(jsonStr);
+    photoResult.name=photoResult.name||desc;
+    document.getElementById('ai-items').innerHTML=
+      '<div class="ai-item"><span>Protein</span><span>'+(photoResult.protein_g||0)+'g</span></div>'+
+      '<div class="ai-item"><span>Carbs</span><span>'+(photoResult.carbs_g||0)+'g</span></div>'+
+      '<div class="ai-item"><span>Fat</span><span>'+(photoResult.fat_g||0)+'g</span></div>';
+    document.getElementById('ai-total').textContent=(photoResult.total_cals||0)+' kcal';
+    document.getElementById('ai-analyzing').style.display='none';
+    document.getElementById('ai-result').style.display='block';
+    document.getElementById('mn').value=photoResult.name;
+    document.getElementById('mc').value=photoResult.total_cals||'';
+  } catch(e) {
+    document.getElementById('ai-analyzing').textContent='Could not analyze — enter manually below.';
+  }
+  btn.disabled=false;btn.textContent='🤖 Analyze with AI';
+}
+function rNutrition() {
+  const t=today();
+  const meals=Object.values(S.meals).filter(m=>m.date===t);
+  const tCal=meals.reduce((a,m)=>a+(m.cal||0),0);
+  const tP=meals.reduce((a,m)=>a+(m.p||0),0);
+  const tC=meals.reduce((a,m)=>a+(m.c||0),0);
+  const tF=meals.reduce((a,m)=>a+(m.f||0),0);
+  const R=66,circ=2*Math.PI*R,off=circ*(1-Math.min(tCal/S.calGoal,1));
+  document.getElementById('page-nutrition').innerHTML=`
+    <div class="topbar"><div class="ptit" style="margin-bottom:0">Nutrition 🥗</div><div class="topbar-r"><div class="tsc">🔥 ${S.streak}</div><div class="tsc">💎 ${S.xp}</div></div></div>
+    <div class="card" style="text-align:center;margin-top:10px">
+      <div class="ch">Daily Calories</div>
+      <div style="position:relative;display:inline-flex;align-items:center;justify-content:center;margin:4px 0 20px">
+        <svg width="176" height="176" viewBox="0 0 176 176"><circle cx="88" cy="88" r="${R}" fill="none" stroke="var(--br)" stroke-width="14"/><circle cx="88" cy="88" r="${R}" fill="none" stroke="url(#rg)" stroke-width="14" stroke-dasharray="${circ}" stroke-dashoffset="${off}" stroke-linecap="round" transform="rotate(-90 88 88)"/><defs><linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#58CC02"/><stop offset="100%" stop-color="#FFC800"/></linearGradient></defs></svg>
+        <div style="position:absolute;text-align:center"><div style="font-size:36px;font-weight:900">${tCal}</div><div style="font-size:13px;font-weight:800;color:var(--t2)">/ ${S.calGoal} kcal</div></div>
+      </div>
+      <div class="mr"><div class="ml"><span>Protein 💪</span><span style="color:var(--b)">${tP}g / ${S.pGoal}g</span></div><div class="pb" style="height:10px"><div class="pf" style="width:${Math.min(tP/S.pGoal*100,100)}%;background:var(--b)"></div></div></div>
+      <div class="mr"><div class="ml"><span>Carbs ⚡</span><span style="color:var(--o)">${tC}g / ${S.cGoal}g</span></div><div class="pb" style="height:10px"><div class="pf" style="width:${Math.min(tC/S.cGoal*100,100)}%;background:var(--o)"></div></div></div>
+      <div class="mr"><div class="ml"><span>Fat 🥑</span><span style="color:var(--p)">${tF}g / ${S.fGoal}g</span></div><div class="pb" style="height:10px"><div class="pf" style="width:${Math.min(tF/S.fGoal*100,100)}%;background:var(--p)"></div></div></div>
+    </div>
+    <button class="btn btn-g" style="margin-bottom:16px" onclick="openMealM()">+ Log Meal</button>
+    <div class="card">
+      <div class="ch">Today's Meals</div>
+      ${meals.length===0?`<div style="text-align:center;padding:24px 0"><div style="font-size:42px;margin-bottom:10px">🍽️</div><div style="font-size:15px;font-weight:800;color:var(--t2)">Nothing logged yet.</div></div>`:''}
+      ${meals.map(m=>`<div class="mitem"><div class="mthumb">${m.photo?`<img src="${m.photo}"/>`:'🍽️'}</div><div class="minfo"><div class="mname">${m.name}</div><div class="mmac">${m.cal} kcal${m.p?` · ${m.p}g P`:''}${m.c?` · ${m.c}g C`:''}${m.f?` · ${m.f}g F`:''}</div></div><div onclick="delMeal('${m.id}')" style="color:var(--t3);cursor:pointer;padding:4px;font-size:18px;font-weight:900">✕</div></div>`).join('')}
+    </div>
+    <div class="card" style="background:var(--bl);border-color:var(--b)">
+      <div class="ch" style="color:var(--bd)">💡 Bulk Tip</div>
+      <div style="font-size:14px;font-weight:800;color:var(--bd);line-height:1.65">At 6'0" / 138 lbs you need to eat <strong>a lot</strong>. Hit <strong>${S.calGoal} kcal</strong> every day. <strong>${S.pGoal}g protein</strong> is your minimum. If the scale isn't moving after 2 weeks, bump calories by 200.</div>
+    </div>`;
+}
+function openMealM() {
+  photob64=null;photoResult=null;
+  ['food-desc','mn','mc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('pp').style.display='none';
+  document.getElementById('ai-analyzing').style.display='none';
+  document.getElementById('ai-result').style.display='none';
+  openM('m-meal');
+}
+function onPhoto(input) {
+  const file=input.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=async e=>{
+    photob64=e.target.result;
+    document.getElementById('pi').src=photob64;
+    document.getElementById('pp').style.display='block';
+    document.getElementById('ai-analyzing').style.display='block';
+    document.getElementById('ai-result').style.display='none';
+    try {
+      const base64=photob64.split(',')[1];
+      const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+        method:'POST',
+        headers:{'Authorization':'Bearer '+GROQ_KEY,'Content-Type':'application/json'},
+        body:JSON.stringify({model:VISION_MDL,messages:[{role:'user',content:[{type:'image_url',image_url:{url:'data:image/jpeg;base64,'+base64}},{type:'text',text:'Analyze this food image. Respond ONLY in this JSON format, no other text: {"items":[{"name":"Food name","portion":"amount","cals":number}],"total_cals":number,"protein_g":number,"carbs_g":number,"fat_g":number}'}]}],max_tokens:400})
+      });
+      const data=await res.json();
+      const raw=data.choices?.[0]?.message?.content||'{}';
+      const jsonStr=raw.match(/\{[\s\S]*\}/)?.[0]||'{}';
+      photoResult=JSON.parse(jsonStr);
+      document.getElementById('ai-items').innerHTML=(photoResult.items||[]).map(it=>`<div class="ai-item"><span>${it.name} <small>(${it.portion||''})</small></span><span>${it.cals} kcal</span></div>`).join('');
+      document.getElementById('ai-total').textContent=(photoResult.total_cals||0)+' kcal';
+      document.getElementById('ai-analyzing').style.display='none';
+      document.getElementById('ai-result').style.display='block';
+      if(photoResult.items) document.getElementById('mn').value=(photoResult.items||[]).map(i=>i.name).join(', ');
+      if(photoResult.total_cals) document.getElementById('mc').value=photoResult.total_cals;
+    } catch(e) {
+      document.getElementById('ai-analyzing').textContent='Could not analyze — describe it below.';
+    }
+  };
+  r.readAsDataURL(file);
+}
+function debS(val) {
+  clearTimeout(stimer);
+  const el=document.getElementById('srw');
+  if(!val.trim()){el.style.display='none';el.innerHTML='';return}
+  el.style.display='block';
+  el.innerHTML='<div style="padding:14px 16px;color:var(--t2);font-size:14px;font-weight:700">Searching…</div>';
+  stimer=setTimeout(()=>doSearch(val),600);
+}
+async function doSearch(q) {
+  const el=document.getElementById('srw');
+  try {
+    const res=await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&json=1&page_size=10&fields=product_name,nutriments,brands`);
+    const data=await res.json();
+    const hits=(data.products||[]).filter(p=>p.nutriments&&p.product_name&&(p.nutriments['energy-kcal_100g']>0||p.nutriments['energy-kcal']>0)).slice(0,7);
+    if(!hits.length){el.innerHTML='<div style="padding:14px 16px;color:var(--t2);font-weight:700">No results — enter manually</div>';return}
+    window._hits=hits;
+    el.innerHTML=hits.map((p,i)=>{const cal=Math.round(p.nutriments['energy-kcal_100g']||p.nutriments['energy-kcal']/10||0);return `<div class="sri" onclick="pickFood(${i})"><div class="srn">${p.product_name}</div><div class="src">${cal} kcal / 100g${p.brands?' · '+p.brands.split(',')[0].trim():''}</div></div>`;}).join('');
+  } catch {el.innerHTML='<div style="padding:14px 16px;color:var(--r);font-weight:700">Search failed — enter manually</div>';}
+}
+function pickFood(i) {
+  const p=window._hits[i];const n=p.nutriments;
+  selF={name:p.product_name,cal:Math.round(n['energy-kcal_100g']||n['energy-kcal']/10||0),p:Math.round(n['proteins_100g']||0),c:Math.round(n['carbohydrates_100g']||0),f:Math.round(n['fat_100g']||0)};
+  document.getElementById('srw').style.display='none';
+  document.getElementById('ms').value=selF.name;
+  document.getElementById('seln').textContent=selF.name;
+  document.getElementById('selw').style.display='block';
+  document.getElementById('mg').value='100';
+  calcCal();
+}
+function calcCal() {
+  if(!selF)return;
+  const g=parseFloat(document.getElementById('mg').value)||0;
+  document.getElementById('co').textContent=Math.round(selF.cal*g/100)+' kcal';
+  document.getElementById('mo').textContent=`${Math.round(selF.p*g/100)}g protein · ${Math.round(selF.c*g/100)}g carbs · ${Math.round(selF.f*g/100)}g fat`;
+}
+function logMeal() {
+  let name,cal,p=0,c=0,f=0;
+  name=document.getElementById('mn').value.trim();
+  cal=parseInt(document.getElementById('mc').value)||0;
+  if(photoResult){if(!name)name=photoResult.name||photoResult.items?.map(i=>i.name).join(', ')||'Meal';if(!cal)cal=photoResult.total_cals||0;p=photoResult.protein_g||0;c=photoResult.carbs_g||0;f=photoResult.fat_g||0;}
+  if(!name){toast('Enter a meal name!');return;}
+  if(!cal){toast('Enter calories!');return;}
+  const id=Date.now().toString();
+  S.meals[id]={id,name,cal,p,c,f,date:today(),photo:photob64};
+  gainXP(10);save();closeM('m-meal');rNutrition();
+  toast(`🥗 +10 XP! ${name.substring(0,22)} logged`);
+}
+function delMeal(id){delete S.meals[id];save();rNutrition();}
+
+// ── GYM ──
+const WODS={
+  A:{label:'Workout A — Upper Push + Posture',exercises:[
+    {name:'Dumbbell Bench Press',scheme:'3 × 10 reps',note:'Start: 20 lbs each. Lighter than you think — form first. 2 sec down, touch chest, press up. Add 5 lbs total when all 3 sets feel solid.',sets:3},
+    {name:'Incline Dumbbell Press',scheme:'3 × 10 reps',note:'Bench at 45°. Start: 15 lbs each. Upper chest focus. Will feel harder than flat — totally normal. Slow and controlled.',sets:3},
+    {name:'Bent-Over Rear Delt Fly',scheme:'3 × 15 reps',note:'🔑 POSTURE FIX. Hinge forward, arms hang, raise out to sides with slight elbow bend. Start: 8 lbs. Squeeze shoulder blades. Critical for fixing your rounded shoulders.',sets:3},
+    {name:'Dumbbell Lateral Raise',scheme:'3 × 12 reps',note:'Start: 8 lbs — go light. Raise to shoulder height only, 2 sec up / 2 sec down. Zero swinging. These are harder than they look — you found that out already.',sets:3},
+    {name:'Tricep Overhead Extension',scheme:'3 × 12 reps',note:'Hold one DB with both hands overhead. Start: 20 lbs. Lower behind head, elbows tight, press to full extension.',sets:3},
+  ]},
+  B:{label:'Workout B — Lower Body + Pull',exercises:[
+    {name:'Goblet Squat',scheme:'3 × 12 reps',note:'Hold DB at chest. Start: 25 lbs. Feet shoulder-width, toes out slightly. Squat as deep as comfortable, chest up, knees tracking toes. Best leg move you can do at home.',sets:3},
+    {name:'Dumbbell Romanian Deadlift',scheme:'3 × 10 reps',note:'Start: 20 lbs each hand. Hinge at hips with soft knees, lower until hamstring stretch, drive hips forward to stand. Keeps your back healthy and builds posterior chain.',sets:3},
+    {name:'Single-Arm Dumbbell Row',scheme:'3 × 10 reps each side',note:'Knee and hand on bench. Start: 25 lbs. Pull elbow back toward hip — not up. Full stretch at bottom. Big back builder and posture helper.',sets:3},
+    {name:'Prone Y-Raise',scheme:'3 × 12 reps',note:'🔑 POSTURE FIX. Lie face-down on bench, arms hanging. Raise in Y shape above head. Start: 5 lbs or bodyweight. Fixes forward head and weak upper back. Do not skip.',sets:3},
+    {name:'Dumbbell Bicep Curl',scheme:'3 × 12 reps',note:'Start: 15 lbs. Alternating or both at once. Slow on the way down — 3 full seconds. That slow negative is where growth actually happens.',sets:3},
+  ]}
+};
+let gymS={};
+function rGym() {
+  const wod=getWods()[S.wDay];
+  document.getElementById('page-gym').innerHTML=`
+    <div class="topbar"><div class="ptit" style="margin-bottom:0">Gym 💪</div><div class="topbar-r"><div class="tsc">🔥 ${S.streak}</div><div class="tsc">💎 ${S.xp}</div></div></div>
+    <div class="card" style="background:linear-gradient(135deg,var(--pl),var(--bl));border-color:var(--p);margin-top:10px">
+      <div style="font-size:11px;font-weight:900;color:var(--pd);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px">Your Program</div>
+      <div style="font-size:19px;font-weight:900">Beginner Bulk — 3–4×/Week</div>
+      <div style="font-size:13px;color:var(--t2);font-weight:700;margin-top:4px;line-height:1.5">Dumbbells + bench only · Alternate A → B → A → B · Add weight when it feels easy</div>
+    </div>
+    <div class="card">
+      <div class="ch">Select Today's Workout</div>
+      <div class="dtog">
+        <button class="dbtn ${S.wDay==='A'?'active':''}" onclick="setDay('A')">💪 Workout A</button>
+        <button class="dbtn ${S.wDay==='B'?'active':''}" onclick="setDay('B')">🔥 Workout B</button>
+      </div>
+      <div style="font-size:18px;font-weight:900;margin-bottom:18px">${wod.label}</div>
+      ${wod.exercises.map((ex,i)=>`<div class="excard"><div class="exname">${ex.name}</div><div class="exscheme">${ex.scheme}</div><div class="exnote">${ex.note}</div>${Array.from({length:ex.sets},(_,s)=>{const k=`${S.wDay}_${i}_${s}`;const e=gymS[k]||{};return `<div class="srow"><div class="snum">Set ${s+1}</div><input type="number" placeholder="lbs" id="gw${i}_${s}" value="${e.w||''}"/><input type="number" placeholder="reps" id="gr${i}_${s}" value="${e.r||''}"/><button class="stick ${e.done?'done':''}" onclick="tickSet(${i},${s})">✓</button></div>`;}).join('')}</div>`).join('')}
+      <button class="btn btn-p" onclick="finishWod()">Finish Workout (+100 XP) 🏆</button>
+    </div>
+    <div class="card" style="background:var(--gl);border-color:var(--g)">
+      <div class="ch" style="color:var(--gd)">🍗 Post-Workout</div>
+      <div style="font-size:14px;font-weight:800;color:var(--gd);line-height:1.65">Eat within <strong>60 minutes</strong>. Aim for <strong>40–50g protein</strong> + carbs. At 138 lbs your muscles are starving for fuel — don't skip this.</div>
+    </div>
+    <div class="card" style="background:#FFF3CC;border-color:var(--y)">
+      <div class="ch" style="color:#886600">📈 The Rule</div>
+      <div style="font-size:14px;font-weight:800;color:#664400;line-height:1.65">When a weight feels <em>easy</em> for all sets — add 5 lbs next session. That's it. That's the whole game.</div>
+    </div>`;
+}
+function setDay(d){S.wDay=d;gymS={};save();rGym();}
+function tickSet(i,s) {
+  const k=`${S.wDay}_${i}_${s}`;
+  gymS[k]={w:document.getElementById(`gw${i}_${s}`).value,r:document.getElementById(`gr${i}_${s}`).value,done:!(gymS[k]||{}).done};
+  rGym();
+}
+function finishWod() {
+  const oldDay=S.wDay;
+  const wod=getWods()[oldDay];
+  const sets=wod.exercises.map((ex,i)=>({
+    name:ex.name,
+    data:Array.from({length:ex.sets},(_,s)=>({
+      w:(document.getElementById('gw'+i+'_'+s)||{}).value||'',
+      r:(document.getElementById('gr'+i+'_'+s)||{}).value||''
+    }))
+  }));
+  if(!S.wodHistory)S.wodHistory={};
+  S.wodHistory[today()]={day:oldDay,sets};
+  const keys=Object.keys(S.wodHistory).sort().reverse();
+  keys.slice(30).forEach(k=>delete S.wodHistory[k]);
+  gainXP(100);S.wDay=oldDay==='A'?'B':'A';gymS={};save();
+  celebrate('\u{1F4AA}','Workout Done!',"Check your Coach tab for a breakdown \u{1F916}");
+  if(curTab==='home')rHome();
+}
+
+// ── COACH ──
+let coachBusy=false;
+function rCoach() {
+  document.getElementById('page-coach').innerHTML=`
+    <div class="topbar"><div class="ptit" style="margin-bottom:0">AI Coach 🤖</div><div class="topbar-r"><div class="tsc">🔥 ${S.streak}</div><div class="tsc">💎 ${S.xp}</div></div></div>
+    <div class="card" style="background:linear-gradient(135deg,var(--pl),var(--bl));border-color:var(--p);margin-top:6px">
+      <div style="font-size:14px;font-weight:800;color:var(--pd);line-height:1.6">Hey Hayden! I know everything about your program, your goals, and your body. Ask me anything — form, food, motivation, what to eat, why something hurts. I'm here.</div>
+    </div>
+    <div id="wod-wrap" style="margin-bottom:4px"></div>
+    <div class="quick-btns">
+      <button class="qbtn" onclick="quickQ('What should I eat today to hit my bulk goals?')">🍗 What to eat?</button>
+      <button class="qbtn" onclick="quickQ('My form feels off on bench press — how do I fix it?')">🏋️ Bench form</button>
+      <button class="qbtn" onclick="quickQ('How do I fix my posture?')">🧍 Fix my posture</button>
+      <button class="qbtn" onclick="quickQ('I feel unmotivated. What do I do?')">💭 Motivate me</button>
+      <button class="qbtn" onclick="quickQ('What should I do on rest days?')">😴 Rest days</button>
+      <button class="qbtn" onclick="quickQ('How long until I see real results?')">📅 When results?</button>
+    </div>
+    <div class="chat-wrap" id="chat-msgs">
+      ${chatHistory.length===0?'<div class="msg ai">What\'s up Hayden! Ask me anything about your training, nutrition, or goals. I\'ve got you. 💪</div>':chatHistory.map(m=>`<div class="msg ${m.role==='user'?'user':'ai'}">${m.content}</div>`).join('')}
+    </div>
+    <div class="chat-input-row">
+      <input type="text" id="coach-in" placeholder="Ask your coach anything…" onkeydown="if(event.key==='Enter')sendMsg()"/>
+      <button class="send-btn" onclick="sendMsg()">➤</button>
+    </div>`;
+  const msgs=document.getElementById('chat-msgs');
+  if(msgs) msgs.scrollTop=msgs.scrollHeight;
+  const wr=document.getElementById('wod-wrap');
+  if(wr){
+    wr.innerHTML='';
+    const tw=S.wodHistory&&S.wodHistory[today()];
+    if(tw){
+      const ex=tw.sets.map(s=>{const d=s.data.filter(x=>x.w||x.r).map(x=>(x.w||'?')+'lbs x '+(x.r||'?')).join(', ');return d?s.name+': '+d:null;}).filter(Boolean).join(' | ');
+      _wodReviewMsg='I just finished Workout '+tw.day+'. Here is what I logged: '+(ex||'no data recorded')+'. Please analyze my session — what went well, what to improve, and what weight adjustments should I make next time?';
+      wr.appendChild(makeWodCard(tw.day));
+    }
+  }
+}
+function quickQ(q) {
+  document.getElementById('coach-in').value=q;
+  sendMsg();
+}
+function parseCoachResponse(raw) {
+  const match = raw.match(/ACTIONS:([\s\S]*?):ENDACTIONS/);
+  if (!match) return { message: raw, actions: [] };
+  let actions = [];
+  try {
+    const parsed = JSON.parse(match[1].trim());
+    actions = Array.isArray(parsed) ? parsed : [parsed];
+  } catch(e) {}
+  const message = raw.replace(/ACTIONS:[\s\S]*?:ENDACTIONS\n?/, '').trim();
+  return { message, actions };
+}
+
+function applyActions(actions) {
+  let toasts = [];
+  for (const a of actions) {
+    if (a.type === 'update_workout' && a.day && a.exercises) {
+      if (!S.wods) S.wods = JSON.parse(JSON.stringify(DEFAULT_WODS));
+      S.wods[a.day] = { label: a.label || `Workout ${a.day}`, exercises: a.exercises };
+      toasts.push(`Workout ${a.day} updated! 💪`);
+    } else if (a.type === 'update_goals') {
+      if (a.calGoal) S.calGoal = a.calGoal;
+      if (a.pGoal) S.pGoal = a.pGoal;
+      if (a.cGoal) S.cGoal = a.cGoal;
+      if (a.fGoal) S.fGoal = a.fGoal;
+      toasts.push('Goals updated! 🎯');
+    } else if (a.type === 'add_task') {
+      const id = Date.now().toString() + Math.random();
+      S.tasks[id] = { id, text: a.text, xp: a.xp || 50, done: false, date: today() };
+      toasts.push(`Task added: "${a.text.substring(0,25)}"!`);
+    }
+  }
+  if (actions.length > 0) {
+    save();
+    setTimeout(() => {
+      if (curTab === 'gym') rGym();
+      else if (curTab === 'home') rHome();
+      else if (curTab === 'tasks') rTasks();
+      else if (curTab === 'nutrition') rNutrition();
+    }, 400);
+    if (toasts.length) setTimeout(() => toast(toasts.join(' · ')), 600);
+  }
+}
+
+async function sendMsg() {
+  if(coachBusy)return;
+  const input=document.getElementById('coach-in');
+  const text=input.value.trim();
+  if(!text)return;
+  input.value='';
+  coachBusy=true;
+  chatHistory.push({role:'user',content:text});
+  saveChat();
+  const msgs=document.getElementById('chat-msgs');
+  msgs.innerHTML+=`<div class="msg user">${text}</div><div class="msg thinking" id="thinking">Coach is thinking…</div>`;
+  msgs.scrollTop=msgs.scrollHeight;
+  try {
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+GROQ_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:CHAT_MDL,
+        messages:[{role:'system',content:getTrainerPrompt()},...chatHistory.slice(-20)],
+        max_tokens:800,temperature:0.7
+      })
+    });
+    const data=await res.json();
+    const raw=data.choices?.[0]?.message?.content||"Sorry, I couldn't respond. Try again.";
+    const {message, actions} = parseCoachResponse(raw);
+    chatHistory.push({role:'assistant',content:message});
+    saveChat();
+    applyActions(actions);
+    const t=document.getElementById('thinking');
+    if(t) t.outerHTML=`<div class="msg ai">${message}</div>`;
+  } catch(e) {
+    const t=document.getElementById('thinking');
+    if(t) t.outerHTML='<div class="msg ai">Connection issue — make sure you\'re online.</div>';
+  }
+  coachBusy=false;
+  const msgs2=document.getElementById('chat-msgs');
+  if(msgs2) msgs2.scrollTop=msgs2.scrollHeight;
+}
+
+// ── INIT ──
+pruneOldData();tickStreak();
+rHome();
+</script>
+</body>
+</html>
