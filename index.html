@@ -327,7 +327,14 @@ const DEFAULT_WODS = {
 };
 const DEF = {xp:0,level:1,streak:0,lastDate:null,tasks:{},meals:{},calGoal:3300,pGoal:155,cGoal:400,fGoal:90,wDay:'A',wods:null,wodHistory:{}};
 let S;try{S=JSON.parse(localStorage.getItem('hf4')||'null')||JSON.parse(localStorage.getItem('hf4_bak')||'null')||JSON.parse(JSON.stringify(DEF));}catch(e){try{S=JSON.parse(localStorage.getItem('hf4_bak')||'null')||JSON.parse(JSON.stringify(DEF));}catch(e2){S=JSON.parse(JSON.stringify(DEF));}}
-const save=()=>{const d=JSON.stringify(S);localStorage.setItem('hf4',d);localStorage.setItem('hf4_bak',d);};
+const save=()=>{
+  try{
+    const d=JSON.stringify(S);
+    localStorage.setItem('hf4',d);
+    localStorage.setItem('hf4_bak',d);
+    localStorage.setItem('hf4_ts',Date.now().toString());
+  }catch(e){}
+};
 // Migrate: ensure all DEF keys exist in loaded state
 Object.keys(DEF).forEach(k=>{if(S[k]===undefined)S[k]=JSON.parse(JSON.stringify(DEF[k]));});
 function getWods() { return S.wods || DEFAULT_WODS; }
@@ -336,12 +343,16 @@ let chatHistory = JSON.parse(localStorage.getItem('hf4_chat')||'[]');
 function saveChat() { localStorage.setItem('hf4_chat', JSON.stringify(chatHistory.slice(-40))); }
 
 // ── DATE / STREAK ──
-const ds = d => d.toISOString().split('T')[0];
-const today = () => ds(new Date());
+const today = () => {
+  const d = new Date();
+  return d.getFullYear() + '-' +
+    String(d.getMonth()+1).padStart(2,'0') + '-' +
+    String(d.getDate()).padStart(2,'0');
+};
 function tickStreak() {
   const t=today(); if(S.lastDate===t) return;
   const yd=new Date(); yd.setDate(yd.getDate()-1);
-  S.streak = S.lastDate===ds(yd) ? S.streak+1 : 1;
+  const yds=yd.getFullYear()+'-'+String(yd.getMonth()+1).padStart(2,'0')+'-'+String(yd.getDate()).padStart(2,'0');S.streak=S.lastDate===yds?S.streak+1:1;
   S.lastDate=t; save();
 }
 function greet() {
@@ -929,13 +940,10 @@ rHome();
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
-window.addEventListener('error', function(e) {
-  const d = document.createElement('div');
-  d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#ff4b4b;color:#fff;padding:12px 16px;z-index:9999;font-size:13px;font-family:monospace;line-height:1.4';
-  d.textContent = 'JS Error: ' + e.message + ' (line ' + e.lineno + ')';
-  document.body.appendChild(d);
-  setTimeout(() => d.remove(), 8000);
-});
+// Save data when app is backgrounded (iOS)
+document.addEventListener('visibilitychange', () => { if(document.visibilityState==='hidden') save(); });
+window.addEventListener('pagehide', save);
+window.addEventListener('beforeunload', save);
 </script>
 </body>
 </html>
