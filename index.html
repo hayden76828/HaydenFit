@@ -327,14 +327,88 @@ const DEFAULT_WODS = {
 };
 const DEF = {xp:0,level:1,streak:0,lastDate:null,tasks:{},meals:{},calGoal:3300,pGoal:155,cGoal:400,fGoal:90,wDay:'A',wods:null,wodHistory:{}};
 let S;try{S=JSON.parse(localStorage.getItem('hf4')||'null')||JSON.parse(localStorage.getItem('hf4_bak')||'null')||JSON.parse(JSON.stringify(DEF));}catch(e){try{S=JSON.parse(localStorage.getItem('hf4_bak')||'null')||JSON.parse(JSON.stringify(DEF));}catch(e2){S=JSON.parse(JSON.stringify(DEF));}}
+let _quotaWarned=false;
 const save=()=>{
   try{
     const d=JSON.stringify(S);
     localStorage.setItem('hf4',d);
     localStorage.setItem('hf4_bak',d);
     localStorage.setItem('hf4_ts',Date.now().toString());
-  }catch(e){}
+    _quotaWarned=false;
+  }catch(e){
+    // Write failed (usually iOS localStorage quota). Prune old data and retry once.
+    try{
+      pruneOldData();
+      const d=JSON.stringify(S);
+      localStorage.setItem('hf4',d);
+      localStorage.setItem('hf4_bak',d);
+      localStorage.setItem('hf4_ts',Date.now().toString());
+    }catch(e2){
+      // Still failing — surface it instead of losing data silently.
+      if(!_quotaWarned && typeof toast==='function'){_quotaWarned=true;toast('⚠️ Storage full — export a backup now!');}
+    }
+  }
 };
+
+// ── PHOTO STORE (IndexedDB) ──
+// Photos are big; keeping them in localStorage blew past iOS's ~5MB cap and
+// silently broke every save. They now live in IndexedDB, keyed by meal id.
+const PHOTOS={};
+let _db=null;
+function idbInit(){
+  return new Promise(res=>{
+    try{
+      const rq=indexedDB.open('haydenfit',1);
+      rq.onupgradeneeded=e=>{const db=e.target.result;if(!db.objectStoreNames.contains('photos'))db.createObjectStore('photos');};
+      rq.onsuccess=e=>{_db=e.target.result;res();};
+      rq.onerror=()=>res();
+    }catch(e){res();}
+  });
+}
+function idbPut(id,dataURL){
+  return new Promise((res,rej)=>{
+    if(!_db)return rej();
+    try{const tx=_db.transaction('photos','readwrite');tx.objectStore('photos').put(dataURL,id);tx.oncomplete=()=>res();tx.onerror=()=>rej();}catch(e){rej();}
+  });
+}
+function idbDel(id){try{if(_db){const tx=_db.transaction('photos','readwrite');tx.objectStore('photos').delete(id);}}catch(e){}}
+function idbLoadAll(){
+  return new Promise(res=>{
+    if(!_db)return res();
+    try{
+      const cur=_db.transaction('photos','readonly').objectStore('photos').openCursor();
+      cur.onsuccess=e=>{const c=e.target.result;if(c){PHOTOS[c.key]=c.value;c.continue();}else res();};
+      cur.onerror=()=>res();
+    }catch(e){res();}
+  });
+}
+// Shrink an image to keep storage tiny (max 512px, JPEG q0.7).
+function downscale(dataURL,maxDim,q){
+  return new Promise(res=>{
+    const img=new Image();
+    img.onload=()=>{
+      let w=img.width,h=img.height;
+      if(w>h&&w>maxDim){h=Math.round(h*maxDim/w);w=maxDim;}
+      else if(h>maxDim){w=Math.round(w*maxDim/h);h=maxDim;}
+      try{const cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,0,0,w,h);res(cv.toDataURL('image/jpeg',q));}
+      catch(e){res(dataURL);}
+    };
+    img.onerror=()=>res(dataURL);
+    img.src=dataURL;
+  });
+}
+// Move any legacy base64 photos out of the localStorage state blob into IndexedDB.
+async function migratePhotos(){
+  let changed=false;
+  for(const id of Object.keys(S.meals||{})){
+    const m=S.meals[id];
+    if(typeof m.photo==='string' && m.photo.indexOf('data:')===0){
+      try{await idbPut(id,m.photo);PHOTOS[id]=m.photo;}catch(e){}
+      m.photo=true;changed=true;
+    }
+  }
+  if(changed)save();
+}
 // Migrate: ensure all DEF keys exist in loaded state
 Object.keys(DEF).forEach(k=>{if(S[k]===undefined)S[k]=JSON.parse(JSON.stringify(DEF[k]));});
 function getWods() { return S.wods || DEFAULT_WODS; }
@@ -452,7 +526,7 @@ function importData() {
 function pruneOldData() {
   const cutoff=new Date();cutoff.setDate(cutoff.getDate()-60);
   const cut=cutoff.toISOString().split('T')[0];
-  Object.keys(S.meals).forEach(k=>{if((S.meals[k].date||'')<=cut)delete S.meals[k];});
+  Object.keys(S.meals).forEach(k=>{if((S.meals[k].date||'')<=cut){idbDel(k);delete PHOTOS[k];delete S.meals[k];}});
   Object.keys(S.tasks).forEach(k=>{if((S.tasks[k].date||'')<=cut)delete S.tasks[k];});
 }
 // ── HOME ──
@@ -641,7 +715,7 @@ function rNutrition() {
     <div class="card">
       <div class="ch">Today's Meals</div>
       ${meals.length===0?`<div style="text-align:center;padding:24px 0"><div style="font-size:42px;margin-bottom:10px">🍽️</div><div style="font-size:15px;font-weight:800;color:var(--t2)">Nothing logged yet.</div></div>`:''}
-      ${meals.map(m=>`<div class="mitem"><div class="mthumb">${m.photo?`<img src="${m.photo}"/>`:'🍽️'}</div><div class="minfo"><div class="mname">${m.name}</div><div class="mmac">${m.cal} kcal${m.p?` · ${m.p}g P`:''}${m.c?` · ${m.c}g C`:''}${m.f?` · ${m.f}g F`:''}</div></div><div onclick="delMeal('${m.id}')" style="color:var(--t3);cursor:pointer;padding:4px;font-size:18px;font-weight:900">✕</div></div>`).join('')}
+      ${meals.map(m=>`<div class="mitem"><div class="mthumb">${m.photo&&PHOTOS[m.id]?`<img src="${PHOTOS[m.id]}"/>`:'🍽️'}</div><div class="minfo"><div class="mname">${m.name}</div><div class="mmac">${m.cal} kcal${m.p?` · ${m.p}g P`:''}${m.c?` · ${m.c}g C`:''}${m.f?` · ${m.f}g F`:''}</div></div><div onclick="delMeal('${m.id}')" style="color:var(--t3);cursor:pointer;padding:4px;font-size:18px;font-weight:900">✕</div></div>`).join('')}
     </div>
     <div class="card" style="background:var(--bl);border-color:var(--b)">
       <div class="ch" style="color:var(--bd)">💡 Bulk Tip</div>
@@ -723,7 +797,7 @@ function calcCal() {
   document.getElementById('co').textContent=Math.round(selF.cal*g/100)+' kcal';
   document.getElementById('mo').textContent=`${Math.round(selF.p*g/100)}g protein · ${Math.round(selF.c*g/100)}g carbs · ${Math.round(selF.f*g/100)}g fat`;
 }
-function logMeal() {
+async function logMeal() {
   let name,cal,p=0,c=0,f=0;
   name=document.getElementById('mn').value.trim();
   cal=parseInt(document.getElementById('mc').value)||0;
@@ -731,11 +805,15 @@ function logMeal() {
   if(!name){toast('Enter a meal name!');return;}
   if(!cal){toast('Enter calories!');return;}
   const id=Date.now().toString();
-  S.meals[id]={id,name,cal,p,c,f,date:today(),photo:photob64};
+  let hasPhoto=false;
+  if(photob64){
+    try{const small=await downscale(photob64,512,0.7);await idbPut(id,small);PHOTOS[id]=small;hasPhoto=true;}catch(e){}
+  }
+  S.meals[id]={id,name,cal,p,c,f,date:today(),photo:hasPhoto};
   gainXP(10);save();closeM('m-meal');rNutrition();
   toast(`🥗 +10 XP! ${name.substring(0,22)} logged`);
 }
-function delMeal(id){delete S.meals[id];save();rNutrition();}
+function delMeal(id){delete S.meals[id];delete PHOTOS[id];idbDel(id);save();rNutrition();}
 
 // ── GYM ──
 const WODS={
@@ -932,13 +1010,25 @@ async function sendMsg() {
 }
 
 // ── INIT ──
-pruneOldData();tickStreak();
-rHome();
+rHome(); // paint immediately from localStorage state
+(async()=>{
+  await idbInit();
+  await idbLoadAll();      // load saved photos into PHOTOS cache
+  await migratePhotos();   // move any legacy base64 photos out of localStorage
+  pruneOldData();
+  tickStreak();
+  if(curTab==='home')rHome(); else nav(curTab); // repaint now that photos are ready
+})();
 </script>
 
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
+  // When a new service worker takes control, reload once to load the new code.
+  let _reloaded=false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if(_reloaded)return; _reloaded=true; location.reload();
+  });
 }
 // Save data when app is backgrounded (iOS)
 document.addEventListener('visibilitychange', () => { if(document.visibilityState==='hidden') save(); });
